@@ -1,0 +1,32 @@
+{
+  "name": "telegram-bot-autotest",
+  "id": "telegram-bot-autotest",
+  "owner": {
+    "name": "wenyaohuicom"
+  },
+  "metadata": {
+    "description": "Telegram Bot auto-testing skill. Login as personal account, auto-explore bot commands, buttons, and features, then generate a structured report.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "telegram-bot-autotest",
+      "source": "./",
+      "description": "Test any Telegram bot by automatically sending commands, clicking inline buttons, and exploring reply keyboards. Generates a structured JSON report of all bot features.",
+      "version": "1.0.0",
+      "author": {
+        "name": "wenyaohuicom"
+      },
+      "keywords": [
+        "telegram",
+        "bot",
+        "autotest",
+        "testing",
+        "telethon",
+        "automation"
+      ],
+      "category": "testing",
+      "strict": false
+    }
+  ]
+}

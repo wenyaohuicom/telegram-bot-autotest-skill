@@ -1,0 +1,11 @@
+{
+  "name": "telegram-bot-autotest",
+  "description": "Telegram Bot auto-testing skill. Logs into Telegram as a personal account and automatically interacts with any bot to discover and summarize its features, commands, buttons, and workflows.",
+  "version": "1.0.0",
+  "author": {
+    "name": "wenyaohuicom"
+  },
+  "license": "MIT",
+  "keywords": ["telegram", "bot", "autotest", "testing", "telethon", "automation"],
+  "skills": ["./.claude/skills/telegram-bot-autotest"]
+}
