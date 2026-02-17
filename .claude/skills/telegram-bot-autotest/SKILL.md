@@ -2,10 +2,11 @@
 name: telegram-bot-autotest
 description: >
   This skill should be used when the user asks to "test a telegram bot",
-  "explore a bot's functionality", "autotest a Telegram bot", or
-  "check what a bot does". It logs into Telegram as a personal account
-  and automatically interacts with the specified bot to discover and
-  summarize its features.
+  "explore a bot's functionality", "autotest a Telegram bot",
+  "check what a bot does", "clone a bot", or "reverse engineer a bot".
+  It logs into Telegram as a personal account and deeply explores the
+  specified bot's complete structure — every command, every inline button
+  (recursively), every reply keyboard — producing a full blueprint report.
 ---
 
 # Telegram Bot Autotest Skill
@@ -16,8 +17,6 @@ All scripts are located at: `{{SKILL_DIR}}/scripts/`
 Runtime data is stored at: `~/.telegram-bot-autotest/`
 
 ## Step 1: Environment Setup
-
-Run the setup script to check dependencies:
 
 ```bash
 bash {{SKILL_DIR}}/scripts/setup.sh
@@ -75,7 +74,7 @@ If `PhoneCodeInvalidError`, ask the user to re-enter the code.
 
 ## Step 4: Run Bot Test
 
-Once logged in, run the bot tester with the target bot username:
+Once logged in, run the deep bot explorer:
 
 ```bash
 python3 {{SKILL_DIR}}/scripts/tg_bot_tester.py @TARGET_BOT --save
@@ -83,36 +82,70 @@ python3 {{SKILL_DIR}}/scripts/tg_bot_tester.py @TARGET_BOT --save
 
 Replace `@TARGET_BOT` with the bot username the user wants to test.
 
-The `--save` flag saves the report to `~/.telegram-bot-autotest/reports/`.
+Options:
+- `--max-depth=5` — Max inline button recursion depth (default 5)
+- `--max-buttons=100` — Max total buttons to click (default 100)
+- `--timeout=10` — Response timeout in seconds (default 10)
+- `--save` — Save report to `~/.telegram-bot-autotest/reports/`
 
-## Step 5: Generate Summary Report
+## Step 5: Generate Blueprint Report
 
-Parse the JSON output and present a structured summary to the user:
+Parse the JSON output and present a **complete bot blueprint** to the user. The report should be detailed enough to replicate the bot.
 
-### Report Format
+### Report Structure
 
-**Bot: @username** - Bot Name
-**Description:** (from bot_info)
+#### 1. Bot Identity
+- Bot name, username, description
+- Registered commands list (from BotFather)
 
-**Registered Commands:**
-- List each command with its description
+#### 2. /start Response Blueprint
+- Exact response text (preserve emoji and formatting)
+- Full inline button layout: show rows and columns with exact button text
+- Reply keyboard layout if any
 
-**Feature Discovery:**
+#### 3. /help Response Blueprint
+- Exact response text
+- All commands discovered from help text
 
-For each phase that returned data:
-1. **/start response** - Summarize what the bot says on start
-2. **/help response** - Summarize help text
-3. **Inline Buttons** - List discovered buttons and what they do
-4. **Reply Keyboard** - List keyboard options and their effects
-5. **Registered Commands** - Results of each command
-6. **Additional Commands** - Any common commands that worked
+#### 4. Button Navigation Tree
+This is the most important section. For each entry in `button_tree`, present:
+- **Path**: shows the navigation chain (e.g., `/start > [🔥 Trending] > [💰 ZEN]`)
+- **Depth**: how deep in the tree
+- **Button text**: exact text with emoji
+- **Callback data**: the callback_data string
+- **Result**: what happened when clicked:
+  - Response text (preserve emoji and formatting)
+  - Any new inline buttons that appeared (full layout with rows)
+  - Callback answer (toast/alert) if any
+  - Whether it was a new message or edited the existing one
 
-**Statistics:**
-- Total interactions / Successful / Timeouts / Errors
+Present the tree in a hierarchical format so the user can see the full navigation structure.
 
-**Observations:**
-- Note any interesting patterns (e.g., "bot has a rich menu system", "bot supports multiple languages")
-- Flag any errors or unusual behavior
+#### 5. Reply Keyboard
+- Each button text and what response it produced
+
+#### 6. Commands
+- Each registered command, its description, and its response
+- Each discovered command from /help and its response
+- Common commands that were recognized
+
+#### 7. Statistics
+- Total interactions, successful responses, timeouts, errors
+- Buttons explored, max depth reached
+
+### Presentation Guidelines
+
+- Preserve ALL emoji in button text and response text exactly as-is
+- Show inline button layouts as visual grids, e.g.:
+  ```
+  [ 🪙 Launch Token ] [ 🔥 Trending ]
+  [ 💰 My Wallet    ] [ 📊 Portfolio ]
+  [ 🏆 Leaderboard  ] [ 🎁 Invite   ]
+  [ 📖 How to Earn                   ]
+  ```
+- For the button tree, use indentation to show depth
+- Include callback_data values (needed for replication)
+- Note which buttons produce new messages vs edit existing ones
 
 ## Error Handling
 
@@ -123,6 +156,6 @@ For each phase that returned data:
 ## Important Notes
 
 - Never share or display the user's API credentials in the output.
-- The test only reads from the bot; it does not share phone, location, or click URL buttons.
-- Inline button exploration is limited to depth 1 and max 20 buttons for safety.
+- The test does not share phone, location, or click URL buttons (URL buttons are recorded but not followed).
+- BFS exploration with visited tracking prevents infinite loops.
 - There is a 1-second delay between interactions to avoid rate limiting.
